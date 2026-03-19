@@ -1,9 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	fmt.Println("Programming Language API Server")
-	fmt.Println("Project setup complete!")
-	fmt.Println("Folder structure created")
+	var router *gin.Engine = gin.Default()
+	router.SetTrustedProxies(nil)
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Programming Languages API is running",
+			"status":  "success",
+		})
+	})
+
+	router.Run(":3000")
 }
