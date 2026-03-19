@@ -1,10 +1,27 @@
 package main
 
 import (
+	"languages-api/internal/config"
+	"log"
+
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	cfg, err := config.Load()
+
+	if err != nil {
+		log.Fatal("Failed to load configuration:", err)
+	}
+
+	db, err := config.NewDatabase(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Database connected successfully")
+	_ = db
+
 	var router *gin.Engine = gin.Default()
 	router.SetTrustedProxies(nil)
 	router.GET("/", func(c *gin.Context) {
@@ -14,5 +31,5 @@ func main() {
 		})
 	})
 
-	router.Run(":3000")
+	router.Run(":" + cfg.Port)
 }

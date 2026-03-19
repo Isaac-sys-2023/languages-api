@@ -5,8 +5,12 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -40,6 +44,40 @@ func (c *Config) GetMissingFields() []string {
 		}
 	}
 	return missing
+}
+
+func NewDatabase(config *Config) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		config.DatabaseHost,
+		config.DatabasePort,
+		config.DatabaseUser,
+		config.DatabasePassword,
+		config.DatabaseName,
+	)
+
+	gormConfig := &gorm.Config{
+		Logger:                 logger.Default.LogMode(logger.Info),
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get database instance: %w", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+
+	return db, nil
 }
 
 func Load() (*Config, error) {
