@@ -1,0 +1,18 @@
+# Binario compilado
+/bin/
+*.exe
+
+# Variables de entorno (nunca subas esto)
+.env
+.env.local
+
+# Caché de Go
+/vendor/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
