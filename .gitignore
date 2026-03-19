@@ -1,6 +1,7 @@
 # Binario compilado
 /bin/
 *.exe
+/tmp
 
 # Variables de entorno (nunca subas esto)
 .env
