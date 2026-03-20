@@ -20,6 +20,7 @@ type Config struct {
 	DatabaseUser     string
 	DatabasePassword string
 	Port             string
+	SslMode          string
 }
 
 func (c *Config) GetMissingFields() []string {
@@ -35,6 +36,7 @@ func (c *Config) GetMissingFields() []string {
 		{c.DatabaseUser, "DATABASE_USER"},
 		{c.DatabasePassword, "DATABASE_PASSWORD"},
 		{c.Port, "PORT"},
+		{c.SslMode, "SSL_MODE"},
 	}
 
 	// go al recorrer un array dinamico (slice) devuelve indice y valor, como no usamos indice no podemos hacer una nomenclatura para no usarla, por eso, en lugar de algo como index o i usamos _ que es como un blank identifier
@@ -48,12 +50,13 @@ func (c *Config) GetMissingFields() []string {
 
 func NewDatabase(config *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.DatabaseHost,
 		config.DatabasePort,
 		config.DatabaseUser,
 		config.DatabasePassword,
 		config.DatabaseName,
+		config.SslMode,
 	)
 
 	gormConfig := &gorm.Config{
@@ -94,6 +97,7 @@ func Load() (*Config, error) {
 		DatabaseUser:     os.Getenv("DATABASE_USER"),
 		DatabasePassword: os.Getenv("DATABASE_PASSWORD"),
 		Port:             os.Getenv("PORT"),
+		SslMode:          os.Getenv("SSL_MODE"),
 	}
 
 	missing := config.GetMissingFields()
