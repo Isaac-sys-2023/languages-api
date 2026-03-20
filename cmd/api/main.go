@@ -2,6 +2,7 @@ package main
 
 import (
 	"languages-api/internal/config"
+	"languages-api/internal/models"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,8 @@ func main() {
 	}
 
 	log.Println("Database connected successfully")
-	_ = db
+
+	db.AutoMigrate(&models.Language{})
 
 	var router *gin.Engine = gin.Default()
 	router.SetTrustedProxies(nil)
