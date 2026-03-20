@@ -8,15 +8,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type LanguageRepository struct {
+type LanguageRepository interface {
+	Create(ctx context.Context, language *models.Language) error
+	CreateBatch(ctx context.Context, languages []models.Language) error
+	FindByID(ctx context.Context, id uint) (*models.Language, error)
+	FindAll(ctx context.Context, page, pageSize int) ([]models.Language, int64, error)
+	FindWithFilters(ctx context.Context, filters LanguageFilters, page, pageSize int) ([]models.Language, int64, error)
+	Update(ctx context.Context, id uint, updates map[string]interface{}) error
+	Save(ctx context.Context, user *models.Language) error
+	Delete(ctx context.Context, id uint) error
+	HardDelete(ctx context.Context, id uint) error
+	Restore(ctx context.Context, id uint) error
+}
+
+type languageRepository struct {
 	db *gorm.DB
 }
 
-func NewLanguageRepository(db *gorm.DB) *LanguageRepository {
-	return &LanguageRepository{db: db}
+func NewLanguageRepository(db *gorm.DB) LanguageRepository {
+	return &languageRepository{db: db}
 }
 
-func (r *LanguageRepository) Create(ctx context.Context, language *models.Language) error {
+func (r *languageRepository) Create(ctx context.Context, language *models.Language) error {
 	result := r.db.WithContext(ctx).Create(language)
 
 	if result.Error != nil {
@@ -26,12 +39,12 @@ func (r *LanguageRepository) Create(ctx context.Context, language *models.Langua
 	return nil
 }
 
-func (r *LanguageRepository) CreateBatch(ctx context.Context, languages []models.Language) error {
+func (r *languageRepository) CreateBatch(ctx context.Context, languages []models.Language) error {
 	result := r.db.WithContext(ctx).CreateInBatches(languages, 100)
 	return result.Error
 }
 
-func (r *LanguageRepository) FindByID(ctx context.Context, id uint) (*models.Language, error) {
+func (r *languageRepository) FindByID(ctx context.Context, id uint) (*models.Language, error) {
 	var language models.Language
 
 	result := r.db.WithContext(ctx).First(&language, id)
@@ -44,7 +57,7 @@ func (r *LanguageRepository) FindByID(ctx context.Context, id uint) (*models.Lan
 	return &language, nil
 }
 
-func (r *LanguageRepository) FindAll(ctx context.Context, page, pageSize int) ([]models.Language, int64, error) {
+func (r *languageRepository) FindAll(ctx context.Context, page, pageSize int) ([]models.Language, int64, error) {
 	var languages []models.Language
 	var total int64
 
@@ -65,7 +78,7 @@ func (r *LanguageRepository) FindAll(ctx context.Context, page, pageSize int) ([
 	return languages, total, nil
 }
 
-func (r *LanguageRepository) FindWithFilters(ctx context.Context, filters LanguageFilters, page, pageSize int) ([]models.Language, int64, error) {
+func (r *languageRepository) FindWithFilters(ctx context.Context, filters LanguageFilters, page, pageSize int) ([]models.Language, int64, error) {
 	var languages []models.Language
 	var total int64
 
@@ -107,7 +120,7 @@ type LanguageFilters struct {
 	ReleaseYear int
 }
 
-func (r *LanguageRepository) Update(ctx context.Context, id uint, updates map[string]interface{}) error {
+func (r *languageRepository) Update(ctx context.Context, id uint, updates map[string]interface{}) error {
 	// Updates only the specified fields
 	result := r.db.WithContext(ctx).
 		Model(&models.Language{}).
@@ -123,7 +136,7 @@ func (r *LanguageRepository) Update(ctx context.Context, id uint, updates map[st
 	return nil
 }
 
-func (r *LanguageRepository) Save(ctx context.Context, user *models.Language) error {
+func (r *languageRepository) Save(ctx context.Context, user *models.Language) error {
 	// Save will update all fields, including zero values
 	// Use this when you want to explicitly set fields to zero/empty
 	result := r.db.WithContext(ctx).Save(user)
@@ -131,7 +144,7 @@ func (r *LanguageRepository) Save(ctx context.Context, user *models.Language) er
 }
 
 // Delete performs a soft delete (sets deleted_at)
-func (r *LanguageRepository) Delete(ctx context.Context, id uint) error {
+func (r *languageRepository) Delete(ctx context.Context, id uint) error {
 	// With gorm.Model, Delete sets deleted_at instead of removing the row
 	result := r.db.WithContext(ctx).Delete(&models.Language{}, id)
 	if result.Error != nil {
@@ -144,14 +157,14 @@ func (r *LanguageRepository) Delete(ctx context.Context, id uint) error {
 }
 
 // HardDelete permanently removes a record from the database
-func (r *LanguageRepository) HardDelete(ctx context.Context, id uint) error {
+func (r *languageRepository) HardDelete(ctx context.Context, id uint) error {
 	// Unscoped bypasses soft delete and permanently removes the record
 	result := r.db.WithContext(ctx).Unscoped().Delete(&models.Language{}, id)
 	return result.Error
 }
 
 // Restore recovers a soft-deleted record
-func (r *LanguageRepository) Restore(ctx context.Context, id uint) error {
+func (r *languageRepository) Restore(ctx context.Context, id uint) error {
 	result := r.db.WithContext(ctx).
 		Unscoped().
 		Model(&models.Language{}).
