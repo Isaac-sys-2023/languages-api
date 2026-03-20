@@ -20,3 +20,7 @@ type Language struct {
 	HabitualUses  pq.StringArray `json:"habitual_uses" gorm:"type:text[]"`
 	Website       *string        `json:"website,omitempty"`
 }
+
+func (Language) TableName() string {
+	return "languages"
+}
